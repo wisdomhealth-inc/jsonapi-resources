@@ -1197,6 +1197,43 @@ module Api
       end
     end
   end
+
+  module WithDeprecationPolicy
+    class AuthorsController < JSONAPI::ResourceController
+    end
+
+    class BooksController < JSONAPI::ResourceController
+    end
+
+    class PostsController < JSONAPI::ResourceController
+    end
+
+    class TagsController < JSONAPI::ResourceController
+    end
+
+    class AuthorResource < JSONAPI::Resource
+      model_name 'Person'
+      attributes :name
+    
+      has_many :books, inverse_relationship: :authors
+    end
+
+    class PostResource < JSONAPI::Resource
+      attribute :title
+      attribute :headline, delegate: :title, deprecated: 'Please use title.'
+      attribute :body
+    
+      has_one :author
+      has_one :writer, class_name: 'Author', deprecated: 'Please use author.'
+    end
+
+    class BookResource < JSONAPI::Resource
+      attribute :title
+    
+      has_many :authors, class_name: 'Author', inverse_relationship: :books
+    end
+
+  end
 end
 
 module Api

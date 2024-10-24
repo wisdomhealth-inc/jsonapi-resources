@@ -4799,3 +4799,76 @@ class Api::V6::AuthorDetailsControllerTest < ActionController::TestCase
     assert_not_nil json_response['data'][0]['relationships']['author']['data']
   end
 end
+
+
+class Api::WithDeprecationPolicy::PostsControllerTest < ActionController::TestCase
+
+  def setup
+    super
+    JSONAPI.configuration.raise_if_parameters_not_allowed = true
+    JSONAPI.configuration.always_include_to_one_linkage_data = false
+    JSONAPI.configuration.resource_deprecations = true
+  end
+
+  def test_show_includes_deprecated_meta
+    assert_cacheable_get :show, params: {id: '1'}
+    assert_response :success
+    assert json_response['data'].is_a?(Hash)
+    assert_equal 'Please use title.', json_response['data']['meta']['deprecations']['attributes']['headline']
+  end
+
+  def test_show_logs_deprecation_warnings
+    with_logger_introspection do |logger_output|
+      get :show, params: {id: '1'}
+
+      assert_equal(
+        'JSONAPI::Resources::Deprecation identity=Api::WithDeprecationPolicy::PostResource:1 type=attribute name=headline message=Please use title. context=context message not configured',
+        logger_output.string.strip
+      )
+    end
+  end
+
+  def test_index_includes_deprecated_meta
+    get :index
+    assert_response :success
+    assert json_response['data'].is_a?(Array)
+    json_response['data'].each do |post|
+      assert_equal 'Please use title.', post['meta']['deprecations']['attributes']['headline']
+    end
+  end
+
+  def test_includes_deprecated_relationship_adds_deprecated_meta_data
+    assert_cacheable_get :show, params: {id: '1', include: 'author,writer'}
+
+    assert_response :success
+
+    assert_equal 'Please use author.', json_response['data']['meta']['deprecations']['relationships']['writer']
+
+    assert json_response['data']['relationships']['author'].has_key?('data'), 'data key should exist for empty has_one relationship'
+    assert json_response['data']['relationships']['writer'].has_key?('data'), 'data should exist for deprecated relationship'
+  end
+
+
+  def test_includes_deprecated_relationship_logs_warning
+    with_logger_introspection do |logger_output|
+      get :show, params: {id: '1', include: 'author,writer'}
+
+      expected_output = <<-TEXT
+JSONAPI::Resources::Deprecation identity=Api::WithDeprecationPolicy::PostResource:1 type=attribute name=headline message=Please use title. context=context message not configured
+JSONAPI::Resources::Deprecation identity=Api::WithDeprecationPolicy::PostResource:1 type=relationship name=writer message=Please use author. context=context message not configured
+      TEXT
+
+      assert_equal(expected_output.strip, logger_output.string.strip)
+    end
+  end
+
+  def test_excluding_deprecated_relationships_and_attributes_removes_warnings
+    with_logger_introspection do |logger_output|
+      get :show, params: {id: '1', include: 'author', fields: {posts: 'id,title'}}
+
+      assert_equal('', logger_output.string.strip)
+      assert_nil json_response['data']['meta']
+    end
+  end
+
+end

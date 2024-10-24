@@ -41,6 +41,8 @@ module JSONAPI
                 :resource_cache_usage_report_function,
                 :default_exclude_links,
                 :use_related_resource_records_for_joins
+    
+    attr_accessor :resource_deprecations
 
     def initialize
       #:underscored_key, :camelized_key, :dasherized_key, or custom
@@ -164,6 +166,9 @@ module JSONAPI
       # permission scopes. It can be overridden explicitly per relationship. Furthermore, specifying a `relation_name`
       # on a relationship will cause this setting to be ignored.
       self.use_related_resource_records_for_joins = true
+
+      # Enable/Disable the resource deprecation feature.
+      self.resource_deprecations = false
     end
 
     def cache_formatters=(bool)
@@ -248,6 +253,22 @@ module JSONAPI
       ActiveSupport::Deprecation.warn('`allow_include` has been replaced by `default_allow_include_to_one` and `default_allow_include_to_many` options.')
       @default_allow_include_to_one = allow_include
       @default_allow_include_to_many = allow_include
+    end
+
+    def format_deprecation_logger_context(context)
+      'context message not configured'
+    end
+
+    def format_deprecation_logger_message(identity:, type:, name:, message:, context:)
+      context_message = format_deprecation_logger_context(context)
+
+      "JSONAPI::Resources::Deprecation identity=#{identity} type=#{type} name=#{name} message=#{message} context=#{context_message}"
+    end
+
+    def deprecation_logger(identity:, type:, name:, message:, context:)
+      message = format_deprecation_logger_message(identity: identity, type: type, name: name, message: message, context: context)
+
+      Rails.logger.warn(message)
     end
 
     attr_writer :allow_sort, :allow_filter, :default_allow_include_to_one, :default_allow_include_to_many

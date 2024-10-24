@@ -305,6 +305,12 @@ TestApp.routes.draw do
     jsonapi_resources :things
     jsonapi_resources :users
 
+    namespace :with_deprecation_policy do
+      jsonapi_resources :authors
+      jsonapi_resources :books
+      jsonapi_resources :posts
+    end
+
     namespace :v1 do
       jsonapi_resources :people
       jsonapi_resources :comments
