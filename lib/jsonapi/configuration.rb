@@ -42,7 +42,7 @@ module JSONAPI
                 :default_exclude_links,
                 :use_related_resource_records_for_joins
     
-    attr_accessor :resource_deprecations
+    attr_accessor :resource_deprecations, :format_deprecation_logger_context
 
     def initialize
       #:underscored_key, :camelized_key, :dasherized_key, or custom
@@ -169,6 +169,9 @@ module JSONAPI
 
       # Enable/Disable the resource deprecation feature.
       self.resource_deprecations = false
+
+      #
+      self.format_deprecation_logger_context = ->(context) {'context message not configured'}
     end
 
     def cache_formatters=(bool)
@@ -255,12 +258,8 @@ module JSONAPI
       @default_allow_include_to_many = allow_include
     end
 
-    def format_deprecation_logger_context(context)
-      'context message not configured'
-    end
-
     def format_deprecation_logger_message(identity:, type:, name:, message:, context:)
-      context_message = format_deprecation_logger_context(context)
+      context_message = format_deprecation_logger_context.call(context)
 
       "JSONAPI::Resources::Deprecation identity=#{identity} type=#{type} name=#{name} message=#{message} context=#{context_message}"
     end
