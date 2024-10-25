@@ -4853,9 +4853,16 @@ class Api::WithDeprecationPolicy::PostsControllerTest < ActionController::TestCa
 
     assert_response :success
 
+    tested = 0
+
     json_response['included'].each do |author|
+      next unless author['type'] == 'authors'
+      next unless author['relationships']['books']['data'] # deprecated meta only included with loaded relationships, not with empty linkage data.
       assert_equal 'we only support authors of comments and posts; books are dead.', author['meta']['deprecations']['relationships']['books']
+      tested += 1
     end
+
+    assert_equal 2, tested
   end
 
   def test_includes_deprecated_relationship_logs_warning
