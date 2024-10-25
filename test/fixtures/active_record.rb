@@ -1215,7 +1215,8 @@ module Api
       model_name 'Person'
       attributes :name
     
-      has_many :books, inverse_relationship: :authors
+      has_many :books, inverse_relationship: :authors, deprecated: 'we only support authors of comments and posts; books are dead.'
+      has_many :posts, inverse_relationship: :author
     end
 
     class PostResource < JSONAPI::Resource

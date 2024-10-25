@@ -4848,6 +4848,15 @@ class Api::WithDeprecationPolicy::PostsControllerTest < ActionController::TestCa
     assert json_response['data']['relationships']['writer'].has_key?('data'), 'data should exist for deprecated relationship'
   end
 
+  def test_has_many_relationship_includes_deprecated_meta
+    assert_cacheable_get :index, params: {include: 'author.books'}
+
+    assert_response :success
+
+    json_response['included'].each do |author|
+      assert_equal 'we only support authors of comments and posts; books are dead.', author['meta']['deprecations']['relationships']['books']
+    end
+  end
 
   def test_includes_deprecated_relationship_logs_warning
     with_logger_introspection do |logger_output|
