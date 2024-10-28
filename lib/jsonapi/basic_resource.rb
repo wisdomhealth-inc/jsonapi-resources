@@ -171,6 +171,10 @@ module JSONAPI
       {}
     end
 
+    def deprecations
+      @_deprecations
+    end
+
     private
 
     def save
@@ -417,6 +421,25 @@ module JSONAPI
       :completed
     end
 
+    def _deprecated_attribute(attr, details)
+      return unless JSONAPI.configuration.resource_deprecations
+
+      @_deprecations ||= {}
+      @_deprecations['attributes'] ||= {}
+
+      return if @_deprecations['attributes'][attr].present?
+
+      @_deprecations['attributes'][attr] = details
+
+      JSONAPI.configuration.deprecation_logger(
+        identity: identity.to_s,
+        type: 'attribute',
+        name: attr,
+        message: details,
+        context: context
+      )
+    end
+
     class << self
       def inherited(subclass)
         subclass.abstract(false)
@@ -546,10 +569,16 @@ module JSONAPI
         @_attributes ||= {}
         @_attributes[attr] = options
         define_method attr do
+          if options[:deprecated]
+            _deprecated_attribute(attr, options[:deprecated])
+          end
           @model.public_send(options[:delegate] ? options[:delegate].to_sym : attr)
         end unless method_defined?(attr)
 
         define_method "#{attr}=" do |value|
+          if options[:deprecated]
+            _deprecated_attribute(attr, options[:deprecated])
+          end
           @model.public_send("#{options[:delegate] ? options[:delegate].to_sym : attr}=", value)
         end unless method_defined?("#{attr}=")
 

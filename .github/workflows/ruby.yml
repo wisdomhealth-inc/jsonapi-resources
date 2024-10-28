@@ -44,13 +44,12 @@ jobs:
         rails:
           - 6.1.1
           - 6.0.3.4
-          - 5.2.4.4
-          - 5.1.7
         database_url:
           - mysql2://root:root@127.0.0.1:3306/test
           - postgresql://postgres:password@localhost:5432/test
           - sqlite3:test_db
         exclude:
+          - database_url: mysql2://root:root@127.0.0.1:3306/test
           - ruby: 3.0.0
             rails: 6.0.3.4
           - ruby: 3.0.0
