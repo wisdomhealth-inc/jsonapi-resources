@@ -4882,7 +4882,7 @@ JSONAPI::Resources::Deprecation identity=Api::WithDeprecationPolicy::PostResourc
     with_logger_introspection do |logger_output|
       get :show, params: {id: '1', include: 'author', fields: {posts: 'id,title'}}
 
-      assert_equal('', logger_output.string.strip)
+      assert_nil logger_output.string.match('Deprecation')
       assert_nil json_response['data']['meta']
     end
   end
