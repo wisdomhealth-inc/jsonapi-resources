@@ -2,7 +2,7 @@
 This is an extended version of jsonapi-resources v0.10.  It adds the following extensions.
 - [[PR #1](https://github.com/wisdomhealth-inc/jsonapi-resources/pull/1)] deprecated-resources - an extension enabling deprecation warnings on resource attributes and relationships.
   - https://wisdomhealth.atlassian.net/wiki/spaces/EN/pages/2490105884/Wisdom+API+Deprecation+Policy
-
+- [[PR #2](https://github.com/wisdomhealth-inc/jsonapi-resources/pull/2)] cherry-pick e92afc6 include_optional_linkage_data with joins.
 
 # JSONAPI::Resources [![Gem Version](https://badge.fury.io/rb/jsonapi-resources.svg)](https://badge.fury.io/rb/jsonapi-resources) [![Build Status](https://secure.travis-ci.org/cerebris/jsonapi-resources.svg?branch=master)](http://travis-ci.org/cerebris/jsonapi-resources) [![Code Climate](https://codeclimate.com/github/cerebris/jsonapi-resources/badges/gpa.svg)](https://codeclimate.com/github/cerebris/jsonapi-resources)
 
