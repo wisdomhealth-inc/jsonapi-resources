@@ -180,7 +180,9 @@ module JSONAPI
         relationships = relationships_hash(source, fetchable_fields, relationship_data)
         obj_hash['relationships'] = relationships unless relationships.blank?
 
-        meta = meta_hash(source)
+        relationships_deprecations_meta = relationships_deprecations(source, fetchable_fields, relationship_data)
+
+        meta = meta_hash(source, relationships_deprecations_meta)
         obj_hash['meta'] = meta unless meta.empty?
       end
 
@@ -236,8 +238,18 @@ module JSONAPI
       }
     end
 
-    def meta_hash(source)
+    def meta_hash(source, relationships_deprecations_meta)
       meta = source.meta(custom_generation_options)
+
+      if source.deprecations
+        meta['deprecations'] = source.deprecations
+      end
+
+      if !relationships_deprecations_meta.empty?
+        meta['deprecations'] ||= {}
+        meta['deprecations']['relationships'] = relationships_deprecations_meta
+      end
+
       (meta.is_a?(Hash) && meta) || {}
     end
 
@@ -308,6 +320,31 @@ module JSONAPI
           end
 
           hash[format_key(name)] = relationship
+        end
+      end
+    end
+
+    def relationships_deprecations(source, fetchable_fields, relationship_data)
+      return {} unless JSONAPI.configuration.resource_deprecations
+
+      relationships = source.class._relationships.select{|k,_v| fetchable_fields.include?(k) }
+      field_set = supplying_relationship_fields(source.class) & relationships.keys
+
+      relationships.each_with_object({}) do |(name, relationship), deprecations|
+        next unless field_set.include?(name) && relationship_data[name]
+
+        deprecated_message = relationship.options[:deprecated]
+
+        if deprecated_message
+          deprecations[name] ||= deprecated_message
+
+          JSONAPI.configuration.deprecation_logger(
+            identity: source.identity.to_s,
+            type: 'relationship',
+            name: name,
+            message: deprecated_message,
+            context: source.context
+          )
         end
       end
     end
