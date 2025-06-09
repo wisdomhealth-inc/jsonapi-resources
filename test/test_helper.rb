@@ -53,6 +53,9 @@ class TestApp < Rails::Application
   config.session_store :cookie_store, key: 'session'
   config.secret_key_base = 'secret'
 
+  # Ruby 3.1 changes
+  config.active_record.use_yaml_unsafe_load = true
+
   #Raise errors on unsupported parameters
   config.action_controller.action_on_unpermitted_parameters = :raise
 

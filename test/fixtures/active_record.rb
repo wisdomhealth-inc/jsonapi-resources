@@ -492,6 +492,12 @@ class Person < ActiveRecord::Base
   ### Validations
   validates :name, presence: true
   validates :date_joined, presence: true
+
+  attr_accessor :_after_commit_saved_changes
+
+  after_commit do
+    _after_commit_saved_changes = saved_changes
+  end
 end
 
 class AuthorDetail < ActiveRecord::Base
