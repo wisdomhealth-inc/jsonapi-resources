@@ -34,6 +34,8 @@ require File.expand_path('../helpers/assertions', __FILE__)
 require File.expand_path('../helpers/functional_helpers', __FILE__)
 require File.expand_path('../helpers/configuration_helpers', __FILE__)
 
+ActiveRecord.use_yaml_unsafe_load = true
+
 Rails.env = 'test'
 
 I18n.load_path += Dir[File.expand_path("../../locales/*.yml", __FILE__)]
