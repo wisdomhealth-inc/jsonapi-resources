@@ -34,8 +34,6 @@ require File.expand_path('../helpers/assertions', __FILE__)
 require File.expand_path('../helpers/functional_helpers', __FILE__)
 require File.expand_path('../helpers/configuration_helpers', __FILE__)
 
-ActiveRecord.use_yaml_unsafe_load = true
-
 Rails.env = 'test'
 
 I18n.load_path += Dir[File.expand_path("../../locales/*.yml", __FILE__)]
@@ -54,6 +52,9 @@ class TestApp < Rails::Application
   config.root = File.dirname(__FILE__)
   config.session_store :cookie_store, key: 'session'
   config.secret_key_base = 'secret'
+
+  # Ruby 3.1 changes
+  config.active_record.use_yaml_unsafe_load = true
 
   #Raise errors on unsupported parameters
   config.action_controller.action_on_unpermitted_parameters = :raise
