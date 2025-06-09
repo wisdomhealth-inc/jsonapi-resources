@@ -11,6 +11,7 @@ version = ENV['RAILS_VERSION'] || 'default'
 platforms :ruby do
   gem 'pg'
   gem 'mysql2'
+  gem 'concurrent-ruby', '1.3.4'
 
   if version.start_with?('4.2', '5.0')
     gem 'sqlite3', '~> 1.3.13'
