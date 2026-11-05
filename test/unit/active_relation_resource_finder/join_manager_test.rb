@@ -3,17 +3,11 @@ require 'jsonapi-resources'
 
 class JoinTreeTest < ActiveSupport::TestCase
 
+  # PostgreSQL quotes true as TRUE; SQLite does too from Rails 8.1 (1 before that).
   def db_true
-    case ActiveRecord::Base.connection.adapter_name
-      when 'SQLite'
-        if Rails::VERSION::MAJOR >= 6 || (Rails::VERSION::MAJOR >= 5 && ActiveRecord::VERSION::MINOR >= 2)
-          "1"
-        else
-          "'t'"
-        end
-      when 'PostgreSQL'
-        'TRUE'
-    end
+    return '1' if ActiveRecord::Base.connection.adapter_name == 'SQLite' && ActiveRecord.version < Gem::Version.new('8.1')
+
+    'TRUE'
   end
 
   def test_no_added_joins
