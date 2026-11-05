@@ -2,6 +2,13 @@ module JSONAPI
   class Error
     attr_accessor :title, :detail, :id, :href, :code, :source, :links, :status, :meta
 
+    # Rack::Utils.status_code takes symbols and integers, and maps symbols that Rack 3.1
+    # renamed (e.g. :unprocessable_entity); a direct SYMBOL_TO_STATUS_CODE lookup returned
+    # nil for those, which rendered as status 0.
+    def self.status_code_string(status)
+      status.nil? ? '' : Rack::Utils.status_code(status).to_s
+    end
+
     def initialize(options = {})
       @title          = options[:title]
       @detail         = options[:detail]
@@ -15,7 +22,7 @@ module JSONAPI
       @source         = options[:source]
       @links          = options[:links]
 
-      @status         = Rack::Utils::SYMBOL_TO_STATUS_CODE[options[:status]].to_s
+      @status         = self.class.status_code_string(options[:status])
       @meta           = options[:meta]
     end
 
@@ -46,7 +53,7 @@ module JSONAPI
 
       if error_object_overrides[:status]
         # :nocov:
-        @status         = Rack::Utils::SYMBOL_TO_STATUS_CODE[error_object_overrides[:status]].to_s
+        @status         = self.class.status_code_string(error_object_overrides[:status])
         # :nocov:
       end
       @meta           = error_object_overrides[:meta] || @meta
