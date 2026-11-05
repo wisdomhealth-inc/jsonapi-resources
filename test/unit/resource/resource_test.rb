@@ -431,18 +431,13 @@ class ResourceTest < ActiveSupport::TestCase
   end
 
   def test_id_attr_deprecation
-
-    ActiveSupport::Deprecation.silenced = false
-    _out, err = capture_io do
+    assert_deprecated(/Id without format is no longer supported. Please remove ids from attributes, or specify a format./, JSONAPI.deprecator) do
       eval <<-CODE
         class ProblemResource < JSONAPI::Resource
           attribute :id
         end
       CODE
     end
-    assert_match /DEPRECATION WARNING: Id without format is no longer supported. Please remove ids from attributes, or specify a format./, err
-  ensure
-    ActiveSupport::Deprecation.silenced = true
   end
 
   def test_id_attr_with_format

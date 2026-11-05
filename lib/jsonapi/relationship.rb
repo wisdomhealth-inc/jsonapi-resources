@@ -19,7 +19,7 @@ module JSONAPI
       @polymorphic = options.fetch(:polymorphic, false) == true
       @polymorphic_types = options[:polymorphic_types]
       if options[:polymorphic_relations]
-        ActiveSupport::Deprecation.warn('Use polymorphic_types instead of polymorphic_relations')
+        JSONAPI.deprecator.warn('Use polymorphic_types instead of polymorphic_relations')
         @polymorphic_types ||= options[:polymorphic_relations]
       end
 
