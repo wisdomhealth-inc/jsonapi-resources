@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ 'master', 'release-0-8', 'release-0-9', 'release-0-10' ]
+    branches: [ 'master', 'release-0-10-wisdom' ]
   pull_request:
     branches: ['**']
 
@@ -10,18 +10,6 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     services:
-      mysql:
-        image: mysql
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: test
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
       postgres:
         image: postgres
         env:
@@ -38,32 +26,20 @@ jobs:
       fail-fast: false
       matrix:
         ruby:
-          - 2.6.6
-          - 2.7.2
-          - 3.0.0
+          - '3.3'
+          - '3.4'
         rails:
-          - 6.1.1
-          - 6.0.3.4
+          - 8.0.5.2
+          - 8.1.4.1
         database_url:
-          - mysql2://root:root@127.0.0.1:3306/test
           - postgresql://postgres:password@localhost:5432/test
           - sqlite3:test_db
-        exclude:
-          - database_url: mysql2://root:root@127.0.0.1:3306/test
-          - ruby: 3.0.0
-            rails: 6.0.3.4
-          - ruby: 3.0.0
-            rails: 5.2.4.4
-          - ruby: 3.0.0
-            rails: 5.1.7
-          - database_url: postgresql://postgres:password@localhost:5432/test
-            rails: 5.1.7
     env:
       RAILS_VERSION: ${{ matrix.rails }}
       DATABASE_URL: ${{ matrix.database_url }}
     name: Ruby ${{ matrix.ruby }} Rails ${{ matrix.rails }} DB ${{ matrix.database_url }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:

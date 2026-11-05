@@ -24,7 +24,7 @@ end
 ENV['DATABASE_URL'] ||= "sqlite3:test_db"
 
 require 'active_record/railtie'
-require 'rails/test_help'
+require 'action_controller/railtie'
 require 'minitest/mock'
 require 'jsonapi-resources'
 require 'pry'
@@ -43,8 +43,6 @@ JSONAPI.configure do |config|
   config.json_key_format = :camelized_key
 end
 
-ActiveSupport::Deprecation.silenced = true
-
 puts "Testing With RAILS VERSION #{Rails.version}"
 
 class TestApp < Rails::Application
@@ -57,17 +55,11 @@ class TestApp < Rails::Application
   config.action_controller.action_on_unpermitted_parameters = :raise
 
   ActiveRecord::Schema.verbose = false
-  config.active_record.schema_format = :none
   config.active_support.test_order = :random
 
-  if Rails::VERSION::MAJOR >= 5
-    config.active_support.halt_callback_chains_on_return_false = false
-    config.active_record.time_zone_aware_types = [:time, :datetime]
-    config.active_record.belongs_to_required_by_default = false
-    if Rails::VERSION::MINOR >= 2
-      config.active_record.sqlite3.represent_boolean_as_integer = true
-    end
-  end
+  config.active_record.time_zone_aware_types = [:time, :datetime]
+  config.active_record.belongs_to_required_by_default = false
+  config.active_support.deprecation = :silence
 end
 
 DatabaseCleaner.allow_remote_database_url = true
@@ -230,6 +222,7 @@ def show_queries
 end
 
 TestApp.initialize!
+require 'rails/test_help'
 
 require File.expand_path('../fixtures/active_record', __FILE__)
 
@@ -505,12 +498,12 @@ class Minitest::Test
     true
   end
 
-  self.fixture_path = "#{Rails.root}/fixtures"
+  self.fixture_paths = ["#{Rails.root}/fixtures"]
   fixtures :all
 end
 
 class ActiveSupport::TestCase
-  self.fixture_path = "#{Rails.root}/fixtures"
+  self.fixture_paths = ["#{Rails.root}/fixtures"]
   fixtures :all
   setup do
     @routes = TestApp.routes
@@ -518,7 +511,7 @@ class ActiveSupport::TestCase
 end
 
 class ActionDispatch::IntegrationTest
-  self.fixture_path = "#{Rails.root}/fixtures"
+  self.fixture_paths = ["#{Rails.root}/fixtures"]
   fixtures :all
 
   def assert_jsonapi_response(expected_status, msg = nil)
